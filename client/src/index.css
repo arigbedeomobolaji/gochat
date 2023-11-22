@@ -1,3 +1,18 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+	.btn-block {
+		@apply text-sm font-medium rounded-full flex items-center gap-3 justify-center py-7 shadow shadow-green-100;
+	}
+	.my-input {
+		@apply py-3 text-lg hover:border-gray-300 rounded-xl shadow-lg shadow-blue-100;
+	}
+}
