@@ -6,7 +6,6 @@ import RegisterUI from "@components/ui/RegisterUI";
 
 export default function Auth() {
 	const [isSignUp, setIsSignUp] = useState(false);
-	console.log(isSignUp);
 
 	function handleIsSignUp(bool: boolean): void {
 		setIsSignUp(bool);
@@ -31,9 +30,6 @@ export default function Auth() {
 					<h3 className="font-medium text-[30px] leading-10">
 						We Create. You Chat and Enjoy.
 					</h3>
-					<p className="text-[16px] text-medium text-gray-500">
-						We Bring Everybody Together
-					</p>
 				</div>
 				<div>
 					<div className="overflow-hidden">

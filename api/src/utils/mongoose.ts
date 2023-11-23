@@ -5,12 +5,14 @@ mongoose.Promise = global.Promise;
 const connectToDatabase = async (url: string): Promise<void> => {
 	const options = {
 		useNewUrlParser: true,
-		useFindAndModify: false,
-		useCreateIndex: true,
-		useUnifiedTopology: true,
 	} as ConnectOptions;
 
-	await mongoose.connect(url, options);
+	try {
+		await mongoose.connect(url, options);
+		console.log("connected to database ✔️");
+	} catch (error) {
+		console.log("❌failed to connect to the DB", error);
+	}
 };
 
 export { connectToDatabase };
