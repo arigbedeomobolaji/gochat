@@ -1,8 +1,9 @@
+import { useState } from "react";
 import LoginUI from "@components/ui/LoginUI";
 import chatLogo from "../assets/chat_logo.png";
 import chatUI from "../assets/chatUI.png";
 import RegisterUI from "@components/ui/RegisterUI";
-import { useState } from "react";
+
 export default function Auth() {
 	const [isSignUp, setIsSignUp] = useState(false);
 	console.log(isSignUp);
@@ -44,7 +45,7 @@ export default function Auth() {
 					</div>
 				</div>
 			</div>
-			<div className="w-3/4 flex flex-col justify-center md:ml-24">
+			<div className="w-3/4 flex flex-col justify-center md:ml-24 relative">
 				{!isSignUp ? (
 					<div className="max-w-[400px] md:ml-10">
 						<LoginUI handleIsSignUp={handleIsSignUp} />

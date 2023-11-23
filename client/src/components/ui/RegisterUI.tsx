@@ -4,6 +4,7 @@ import BlockButton from "../BlockButton";
 import { Button } from "antd";
 import FormInput from "../FormInput";
 import { Input } from "antd";
+import { FaChevronLeft } from "react-icons/fa6";
 
 type RegisterUIType = {
 	handleIsSignUp: (bool: boolean) => void;
@@ -15,6 +16,10 @@ function RegisterUI({ handleIsSignUp }: RegisterUIType): React.ReactElement {
 		<>
 			{useEmail ? (
 				<form>
+					<FaChevronLeft
+						className="text-black w-10 h-10 absolute top-10 -left-20 cursor-pointer"
+						onClick={() => setUseEmail(false)}
+					/>
 					<h1 className="mb-8 text-gray-900 text-[22px] font-bold">
 						Sign up to GoChat
 					</h1>
@@ -45,7 +50,7 @@ function RegisterUI({ handleIsSignUp }: RegisterUIType): React.ReactElement {
 					</p>
 				</form>
 			) : (
-				<div>
+				<div className="relative">
 					<FormHeader action="Up" color="black" />
 					<BlockButton onClick={() => setUseEmail(true)}>
 						Continue
