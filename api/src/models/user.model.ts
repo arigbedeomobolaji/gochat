@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import validator from "validator";
 import jwt from "jsonwebtoken";
+import { UserAuthInputType } from "../types/UserAuthInputType";
+import { userInfo } from "os";
 dotenv.config();
 
 const saltRounds = Number(process.env.SALT_ROUNDS);
@@ -47,9 +49,10 @@ const userSchema = new Schema(
 			unique: true,
 			index: true,
 			validate: [validation, "Must provide an Email"],
+			lowercase: true
 		},
 		name: { type: String, required: true },
-		username: { type: String, required: true, unique: true },
+		username: { type: String, required: true, unique: true, lowercase: true },
 		password: { type: String, required: true },
 		location: {
 			country: { type: String },
@@ -77,6 +80,7 @@ const userSchema = new Schema(
 userSchema.pre("save", async function (next) {
 	try {
 		const user = this;
+		console.log(user.isModified("password"))
 		if (user.isModified("password")) {
 			user.password = await bcrypt.hash(user.password, saltRounds);
 		}
@@ -86,15 +90,15 @@ userSchema.pre("save", async function (next) {
 	}
 });
 
-// Generaet Auth token for user
+// Generate Auth token for user
 userSchema.methods.generateAuthToken = async function () {
 	try {
 		const user = this;
 		// Generate Auth token for user
 		const token = await jwt.sign(
-			{ id: user._id.toString(), email: user.email },
+			{ id: user._id.toString(), email: user.email, name: user.name, location: user.location },
 			tokenSecret,
-			{ expiresIn: "3h" }
+			{ expiresIn: "30mins" }
 		);
 
 		// save the authtoken to db
@@ -111,10 +115,10 @@ userSchema.methods.generateAuthToken = async function () {
 
 // FindByCredentials - find user by email and password
 userSchema.statics.findByCredentials = async (
-	email: string,
+	userAuthInput: UserAuthInputType,
 	password: string
 ) => {
-	const user = await User.findOne({ email });
+	const user = await User.findOne({ ...userAuthInput });
 	if (!user) {
 		throw { error: "Please Authenticate with the correct credentials" };
 	}
@@ -127,7 +131,7 @@ userSchema.statics.findByCredentials = async (
 };
 
 // Delete confidential fields
-userSchema.methods.toJSON = function () {
+userSchema.methods.toJSON = function() {
 	const user = this;
 	const userObject = user.toObject();
 
