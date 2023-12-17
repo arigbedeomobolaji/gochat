@@ -4,7 +4,7 @@ import {
 	getUsers,
 	loginUser,
 } from "../controllers/user.controller";
-import { authorization } from "../middlewares/authorization";
+import { authorization } from "../middlewares/authModdleware";
 const userRouter: Router = express.Router();
 
 userRouter.post("", createUser);

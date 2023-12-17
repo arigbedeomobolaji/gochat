@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { User, UserInput } from "../models/user.model";
-import { IUserRequest } from "../middlewares/authorization";
+import { IUserRequest } from "../middlewares/authModdleware";
 
 type UserType = {
 	email: string;
