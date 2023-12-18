@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { User, UserInput } from "../models/user.model";
-import { Data, IUserRequest } from "../middlewares/authMiddleware";
+import { IUserRequest, UserData } from "../middlewares/authMiddleware";
 import { validOperation } from "../utils/validOperation";
 
 export const createUser = async (req: Request, res: Response) => {
@@ -92,7 +92,7 @@ export const updateUser = async (req: IUserRequest, res: Response) => {
 			if(user){
 				const updatableFields = validOperation(allowedFields, req.body);
 				updatableFields.forEach(async (field) => {
-					const field2 = field as keyof  UserInput
+					const field2 = field as keyof  UserData
 					user[field2] = req.body[field]
 				});
 				user.tokens = user.tokens.filter((token) => token.token !== req.cookies.access_token);
@@ -109,14 +109,5 @@ export const updateUser = async (req: IUserRequest, res: Response) => {
 		}
 	}catch(error) {
 		res.status(500).json({error})
-	}
-}
-
-
-export const googleAuth = async(req: Request, res: Response) => {
-	try {
-		
-	} catch (error) {
-		
 	}
 }

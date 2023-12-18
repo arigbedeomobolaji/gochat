@@ -1,20 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { User, UserDocument } from "../models/user.model";
+import { User, UserInput } from "../models/user.model";
 dotenv.config();
-export type Data = {
+export interface UserData extends UserInput {
 	id: string;
-	email: string;
-	name: string;
-	location: {
-		country: string;
-		city: string;
-	}
 };
 
 export interface IUserRequest extends Request {
-	user?: Data;
+	user?: any;
 }
 
 const tokenSecret = process.env.TOKEN_SECRET as string;
@@ -29,16 +23,16 @@ export const authenticateUser = async (
 		return res.status(403).json({ error: "Please Authenticate" });
 	}
 	try {
-		const data = (await jwt.verify(token, tokenSecret)) as Data;
+		const data = (await jwt.verify(token, tokenSecret)) as UserData;
 		if(data) {
-			req.user = data;
+			req.user = data as UserData;
 		next();
 		}
 		
 	} catch (error: any) {
 		if(error.name === "TokenExpiredError") {
 			const expiredToken = req.cookies.access_token;
-			const data = await jwt.verify(expiredToken, tokenSecret, {ignoreExpiration:true}) as Data;
+			const data = await jwt.verify(expiredToken, tokenSecret, {ignoreExpiration:true}) as UserData;
 			const user = await User.findById(data.id);
 			const tokenId = user?.tokens.findIndex((token) => token.token === expiredToken) as number;
 			
