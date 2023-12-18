@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { User, UserInput } from "../models/user.model";
+import passport from "passport";
+import "../controllers/oath.controller"
 dotenv.config();
 export interface UserData extends UserInput {
 	id: string;
@@ -13,22 +15,24 @@ export interface IUserRequest extends Request {
 
 const tokenSecret = process.env.TOKEN_SECRET as string;
 
-export const authenticateUser = async (
-	req: IUserRequest,
-	res: Response,
-	next: NextFunction
-) => {
-	const token = req.cookies.access_token;
-	if (!token) {
-		return res.status(403).json({ error: "Please Authenticate" });
-	}
+export const authenticateUser =  (passport.authenticate('google'), async (req: IUserRequest, res: Response, next: NextFunction) => {
 	try {
+		
+		if(req.user) {
+			req.user = req.user;
+			console.log(req.user, "AuthMiddlerware")
+			return next();	
+		}
+		const token = req.cookies.access_token;
+		console.log(token)
+		if (!token) {
+			return res.status(403).json({ error: "Please Authenticate" });
+		}
 		const data = (await jwt.verify(token, tokenSecret)) as UserData;
 		if(data) {
 			req.user = data as UserData;
-		next();
+			next();
 		}
-		
 	} catch (error: any) {
 		if(error.name === "TokenExpiredError") {
 			const expiredToken = req.cookies.access_token;
@@ -47,4 +51,4 @@ export const authenticateUser = async (
 		}
 		return res.status(403).send({ error: error });
 	}
-};
+});

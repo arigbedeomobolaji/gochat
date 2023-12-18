@@ -38,6 +38,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const getUsers = async (req: IUserRequest, res: Response) => {
 	try {
+		
 		const me = await User.findById(req.user?.id);
 		res.status(201).json(me);
 	} catch (error) {
@@ -54,8 +55,8 @@ export const logoutUser = async (req: IUserRequest, res: Response) => {
 			if(user){
 				user.tokens = user.tokens.filter((token) => token.token !== currentToken);
 				await user.save();
-				res.clearCookie("access_token");
-				res.status(200).json({message: "User successfully logged out."})
+				
+				res.clearCookie("access_token").status(200).json({message: "User successfully logged out."})
 			}
 		}else {
 			throw {error: "Please Authenticate."}
@@ -72,8 +73,8 @@ export const logoutFromAllDevice = async (req: IUserRequest, res: Response) => {
 			if(user){
 				user.tokens = [];
 				await user.save();
-				res.clearCookie("access_token");
-				res.status(200).json({message: "User successfully logged out."})
+				
+				res.clearCookie("access_token").status(200).json({message: "User successfully logged out."})
 			}
 		}else {
 			throw {error: "Please Authenticate."}
@@ -98,7 +99,6 @@ export const updateUser = async (req: IUserRequest, res: Response) => {
 				user.tokens = user.tokens.filter((token) => token.token !== req.cookies.access_token);
 				await user.save();
 				const token = await user.generateAuthToken();
-				console.log(token)
 				res.cookie("access_token", token, {
 					httpOnly: true,
 					secure: process.env.NODE_ENV === "production"
