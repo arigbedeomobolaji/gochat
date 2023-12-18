@@ -2,6 +2,7 @@ import BlockButton from "../BlockButton";
 import FormHeader from "../FormHeader";
 import { Input, Button } from "antd";
 import FormInput from "../FormInput";
+import { ChangeEvent } from "react";
 
 type LoginUIType = {
 	handleIsSignUp: (bool: boolean) => void;
@@ -16,8 +17,10 @@ export default function LoginUI({
 			<form className="space-y-5 py-6">
 				<FormInput
 					label="Username or Email"
-					placeholder="Username or Email"
-				/>
+					placeholder="Username or Email" 
+					onChange={function (event: ChangeEvent<HTMLInputElement>): void {
+						console.log(event)
+					} }				/>
 				<div>
 					<h3 className="text-gray-900 mb-4 pl-3">Password</h3>
 					<Input.Password
