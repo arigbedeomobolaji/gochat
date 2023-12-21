@@ -1,0 +1,1 @@
+export const expiresIn = 15 * 60 * 1000;

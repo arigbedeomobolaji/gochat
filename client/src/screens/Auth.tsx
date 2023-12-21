@@ -1,14 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LoginUI from "@components/ui/LoginUI";
 import chatLogo from "../assets/chat_logo.png";
 import chatUI from "../assets/chatUI.png";
 import RegisterUI from "@components/ui/RegisterUI";
+import { getUserLocally } from "@src/localStorage/userLocalStorage";
+import { useNavigate } from "react-router-dom";
 
 export default function Auth() {
 	const [isSignUp, setIsSignUp] = useState(false);
+	const navigate = useNavigate();
+	const user = getUserLocally();
 
 	function handleIsSignUp(bool: boolean): void {
 		setIsSignUp(bool);
+	}
+
+	useEffect(() => {
+		if(user) {
+			return navigate("/")
+		}
+	}, []);
+	if(user) {
+		return;
 	}
 	return (
 		<div className="font-lato flex w-screen h-screen overflow-hidden m-0">
@@ -30,7 +43,8 @@ export default function Auth() {
 					<h3 className="font-medium text-[30px] leading-10">
 						We Create. You Chat and Enjoy.
 					</h3>
-				</div>
+				</div
+				>
 				<div>
 					<div className="overflow-hidden">
 						<img

@@ -8,6 +8,10 @@ export default defineConfig({
 		alias: {
 			"@screens": path.resolve(__dirname, "./src/screens/"),
 			"@components": path.resolve(__dirname, "./src/components/"),
+			"@hooks": path.resolve(__dirname, "./src/hooks/"),
+			"@types": path.resolve(__dirname, "./src/types/"),
+			"@src": path.resolve(__dirname, "./src/"),
+
 		},
 	},
 	plugins: [react()],

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from "react";
 import FormHeader from "../FormHeader";
 import BlockButton from "../BlockButton";
@@ -9,6 +10,12 @@ import FormSelect from "../FormSelect";
 import { Country, City } from "country-state-city";
 import _ from "lodash";
 import validator from "validator";
+import { useMutation } from "@tanstack/react-query";
+import { UserInput, registerUser } from "../../queries/user.mutation";
+import { useCookies } from "react-cookie";
+import { saveUser } from "@src/localStorage/userLocalStorage";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
 
 type optionsDataType = {
 	label: string;
@@ -29,30 +36,64 @@ type RegisterUIType = {
 	handleIsSignUp: (bool: boolean) => void;
 };
 
-const registerDataDefault = {
+const registerDataDefault: UserInput = {
 	name: "",
 	username: "",
 	email: "",
 	password: "",
-	country: "",
-	city: "",
+	location: {
+		country: "",
+		city: "",
+	}	
 };
 
 function RegisterUI({ handleIsSignUp }: RegisterUIType): React.ReactElement {
+	const navigate = useNavigate();
 	const [cityOptions, setCityOption] = useState([{ label: "", value: "" }]);
 	const [registerData, setRegisterData] = useState(registerDataDefault);
 	const [useEmail, setUseEmail] = useState(false);
+	const [cookies,setCookie] = useCookies(['access_token']);
+	const mutation = useMutation({
+		mutationFn: registerUser,
+		onError(error) {
+			console.log("error", error.message, error.response.data.message)
+			setTimeout(() => {
+				toast.error(error?.response?.data?.message || error.message, {
+					position: "top-right",
+					theme: "colored",
+				})
+			}, 1)
+		},
+		onSuccess(data, variables, context) {
+			const {token, user} = data.data;
+			setCookie('access_token', token, {path: "/"});
+			saveUser(user);
+			navigate("/");
 
-	const canContinue = !(
+		},
+	});
+
+	let canContinue = (
 		validator.isEmail(registerData.email) &&
-		_.every(_.values(registerData), Boolean)
+		_.every(_.values(registerData), Boolean) && registerData.location.country && registerData.location.city
 	);
-
+	
 	function handleSetRegisterData(name: string, value: string) {
-		setRegisterData((prevState) => ({
-			...prevState,
-			[name]: value.trim(),
-		}));
+		if(name === 'city' || name === "country") {
+			setRegisterData((prevState) => ({
+				...prevState,
+				location: {
+					...prevState.location,
+					[name]: value
+				}
+			}))
+		}else {
+			setRegisterData((prevState) => ({
+				...prevState,
+				[name]: value.trim(),
+			}));
+		}
+		
 	}
 
 	function handleCountryChange(country: never) {
@@ -76,6 +117,18 @@ function RegisterUI({ handleIsSignUp }: RegisterUIType): React.ReactElement {
 		);
 		if (citiesOfCountry) setCityOption(citiesOfCountry);
 	}
+
+	function handleUserRegistration(ev: React.FormEvent) {
+		ev.preventDefault();
+		if(canContinue) {
+			mutation.mutate(registerData);
+		}	
+	}
+
+	if(mutation.isPending) {
+		canContinue = false
+	}
+
 	return (
 		<>
 			{useEmail ? (
@@ -148,7 +201,7 @@ function RegisterUI({ handleIsSignUp }: RegisterUIType): React.ReactElement {
 						/>
 					</div>
 
-					<BlockButton color="black" disabled={canContinue}>
+					<BlockButton onClick={handleUserRegistration} color="black" disabled={!canContinue}>
 						Sign up
 					</BlockButton>
 
@@ -171,6 +224,7 @@ function RegisterUI({ handleIsSignUp }: RegisterUIType): React.ReactElement {
 					</BlockButton>
 				</div>
 			)}
+			<ToastContainer />
 		</>
 	);
 }

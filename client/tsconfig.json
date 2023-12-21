@@ -20,7 +20,7 @@
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
 
-		"baseUrl": "./",
+		"baseUrl": ".",
 		"paths": {
 			// @name_of_alias: [real_path_of_directory]
 			"@src/*": ["./src/*"],

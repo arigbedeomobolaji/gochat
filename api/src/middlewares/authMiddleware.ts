@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { User, UserInput } from "../models/user.model";
 import passport from "passport";
 import "../controllers/oath.controller"
+import createHttpError from "http-errors";
 dotenv.config();
 export interface UserData extends UserInput {
 	id: string;
@@ -17,20 +18,20 @@ const tokenSecret = process.env.TOKEN_SECRET as string;
 
 export const authenticateUser =  (passport.authenticate('google'), async (req: IUserRequest, res: Response, next: NextFunction) => {
 	try {
-		
 		if(req.user) {
-			req.user = req.user;
-			console.log(req.user, "AuthMiddlerware")
-			return next();	
+			req.user = req.user?.user;
+			next();
+			return;
 		}
+			
 		const token = req.cookies.access_token;
-		console.log(token)
 		if (!token) {
-			return res.status(403).json({ error: "Please Authenticate" });
+			return next(createHttpError.NotFound("Please authenticate."))
 		}
 		const data = (await jwt.verify(token, tokenSecret)) as UserData;
-		if(data) {
-			req.user = data as UserData;
+		const userInDatabase = await User.findById(data.id);
+		if(userInDatabase )  {
+			req.user = userInDatabase as UserData;
 			next();
 		}
 	} catch (error: any) {
@@ -41,14 +42,12 @@ export const authenticateUser =  (passport.authenticate('google'), async (req: I
 			const tokenId = user?.tokens.findIndex((token) => token.token === expiredToken) as number;
 			
 			if(user && tokenId > -1) {
-				console.log({tokes: user.tokens.length})
 				user.tokens.splice(tokenId,1);
-				console.log({tokes: user.tokens.length})
 				res.clearCookie('access_token');
 				await user.save();
-				return res.status(401).json({error: "Please authenticate. token has been deleted because it has expired."})
+				throw (next(createHttpError.Unauthorized("Please authenticate.")));
 			}
 		}
-		return res.status(403).send({ error: error });
+		next(createHttpError.Unauthorized("Please Authenticate."));
 	}
 });

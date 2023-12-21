@@ -3,6 +3,9 @@
 		"Antd",
 		"authtoken",
 		"Lato",
-		"logoutall"
+		"logoutall",
+		"resave",
+		"tanstack",
+		"toastify"
 	]
 }

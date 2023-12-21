@@ -3,14 +3,16 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import validator from "validator";
 import jwt from "jsonwebtoken";
-import { UserAuthInputType } from "../types/UserAuthInputType";
-import { userInfo } from "os";
+import beautifyUnique from 'mongoose-beautiful-unique-validation';
+import createHttpError from "http-errors";
+import { expiresIn } from "../utils";
 dotenv.config();
 
 const saltRounds = Number(process.env.SALT_ROUNDS);
 const tokenSecret = process.env.TOKEN_SECRET as string;
 
 interface UserDocument extends Document {
+  _id: Schema.Types.ObjectId;
   name: string;
   dateOfBirth?: Date;
   location: {
@@ -22,7 +24,7 @@ interface UserDocument extends Document {
   friends: Schema.Types.ObjectId[];
   password: string;
   tokens: { token: string; _id: Schema.Types.ObjectId }[];
-  generateAuthToken(): () => void;
+  generateAuthToken(): string;
 }
 
 export interface UserModel extends Model<UserDocument> {
@@ -78,16 +80,18 @@ const userSchema = new Schema(
   }
 );
 
+// Enable beautifying on this schema
+userSchema.plugin(beautifyUnique);
+
 userSchema.pre("save", async function (next) {
   try {
     const user = this;
-    console.log(user.isModified("password"));
     if (user.isModified("password")) {
       user.password = await bcrypt.hash(user.password, saltRounds);
     }
     next();
   } catch (error) {
-    console.log({ error });
+    throw error;
   }
 });
 
@@ -104,14 +108,14 @@ userSchema.methods.generateAuthToken = async function () {
         location: user.location,
       },
       tokenSecret,
-      { expiresIn: "30mins" }
+      { expiresIn }
     );
 
     // save the authtoken to db
     user.tokens = user.tokens.concat({ token });
     const savedToken = await user.save();
     if (!savedToken) {
-      throw { error: "error occurred" };
+      throw  {error: {message: "error occurred try again"}}
     }
     return token;
   } catch (error) {
@@ -121,17 +125,18 @@ userSchema.methods.generateAuthToken = async function () {
 
 // FindByCredentials - find user by email and password
 userSchema.statics.findByCredentials = async (
-  userAuthInput: UserAuthInputType,
+  userAuthInput: string,
   password: string
 ) => {
-  const user = await User.findOne({ ...userAuthInput });
+  const criterion = userAuthInput.includes("@") ? {['email']:userAuthInput} : {['username']:userAuthInput}
+  const user = await User.findOne(criterion);
   if (!user) {
-    throw { error: "Please Authenticate with the correct credentials" };
+    throw createHttpError.Unauthorized("Please Authenticate with the correct credentials");
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    throw { error: "Please authenticate with the correct Credentials" };
+    throw createHttpError.Unauthorized("Please authenticate with the correct Credentials");
   }
   return user;
 };

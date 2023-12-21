@@ -25,7 +25,7 @@ function FormHeader({ color, action }: FormHeaderType): React.ReactElement {
 				}`}
 			>
 				<FcGoogle />
-				Sign {action} with Google
+				Sign {action} with Google 
 			</Button>
 			</Link>
 			

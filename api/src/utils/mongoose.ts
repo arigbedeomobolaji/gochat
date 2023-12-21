@@ -4,7 +4,6 @@ mongoose.Promise = global.Promise;
 
 const connectToDatabase = async (url: string): Promise<void> => {
 	const options = {
-		useNewUrlParser: true,
 	} as ConnectOptions;
 
 	try {
