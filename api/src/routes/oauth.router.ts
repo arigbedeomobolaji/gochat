@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import "../controllers/oath.controller";
 import { expiresIn } from "../utils";
+import { UserData } from "../middlewares/authMiddleware";
 
 const CLIENT_HOME_PAGE_URL = process.env.CLIENT_HOME_PAGE_URL || "";
 
@@ -37,11 +38,12 @@ oauthRouter.get("/google", passport.authenticate('google', {scope: ['profile', '
 oauthRouter.get("/google/redirect",passport.authenticate('google'), (req,res) => {
     // console.log(req.user);
     // res.redirect(CLIENT_HOME_PAGE_URL)
-    res.status(200).cookie("access_token", req?.user?.token, {
+    const {token, user} = req.user as {token: string, user: UserData}
+    res.status(200).cookie("access_token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         expires: new Date(Date.now() + expiresIn)
-    }).redirect(CLIENT_HOME_PAGE_URL+"?userId="+ req?.user?.user?._id);
+    }).redirect(CLIENT_HOME_PAGE_URL+"?userId="+ user?._id);
 });
 
 export default oauthRouter

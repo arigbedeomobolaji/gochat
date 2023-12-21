@@ -48,7 +48,6 @@ export const getUser = async (req: IUserRequest, res: Response, next: NextFuncti
 	try {
 		const id = req.params.id
 		const user = await User.findById(id);
-		console.log(user, "getUser")
 		if(!user) {
 			throw createHttpError.Unauthorized("Please Authenticate");
 		}	

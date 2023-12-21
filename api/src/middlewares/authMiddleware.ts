@@ -7,6 +7,7 @@ import "../controllers/oath.controller"
 import createHttpError from "http-errors";
 dotenv.config();
 export interface UserData extends UserInput {
+    _id: string;
 	id: string;
 };
 
@@ -25,8 +26,8 @@ export const authenticateUser =  (passport.authenticate('google'), async (req: I
 		}
 		const data = (await jwt.verify(token, tokenSecret)) as UserData;
 		const userInDatabase = await User.findById(data.id);
-		if(userInDatabase )  {
-			req.user = userInDatabase as UserData;
+		if(userInDatabase)  {
+			req.user = userInDatabase as unknown as UserData;
 			next();
 		}
 	} catch (error: any) {
