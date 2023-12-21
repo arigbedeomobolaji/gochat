@@ -16,9 +16,8 @@ userRouter.patch("", authenticateUser, updateUser);
 userRouter.post("/login", loginUser);
 userRouter.patch("/logout", authenticateUser, logoutUser)
 userRouter.patch("/logoutall", authenticateUser, logoutFromAllDevice);
-userRouter.get('/google', passport.authenticate('google'));
+// userRouter.get('/google', passport.authenticate('google'));
 userRouter.get("/:id", authenticateUser, getUser);
-// userRouter.get("", authenticateUser, getUser);
 
 export default userRouter;
 

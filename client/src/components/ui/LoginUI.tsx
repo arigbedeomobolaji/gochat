@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { saveUser } from "@src/localStorage/userLocalStorage";
 import { User } from "@src/types";
+import { errorFormat } from "@src/utils/errorFormat";
 
 type LoginUIType = {
 	handleIsSignUp: (bool: boolean) => void;
@@ -26,14 +27,15 @@ export default function LoginUI({
 }: LoginUIType): React.ReactElement {
 	const navigate = useNavigate();
 	const [usernameOrEmail, setUsernameOrEmail] = useState("");
-	const [cookies, setCookie] = useCookies(['access_token']);
+	const cookie = useCookies(['access_token']);
+	const setCookie = cookie[1]
 	const [password, setPassword] = useState(""); 
 	
 	const mutation = useMutation({
 		mutationFn: loginUser,
 		onError(error) {
 			setTimeout(() => {
-				toast.error(error?.response?.data?.message || error.message, {
+				toast.error(errorFormat(error), {
 					position: "top-right",
 					theme: "colored",
 				})
@@ -64,7 +66,7 @@ export default function LoginUI({
 				<FormInput
 					label="Username or Email"
 					placeholder="Username or Email" 
-					onChange={(event: ChangeEvent<HTMLInputElement>) => setUsernameOrEmail(event.target.value)}/>
+					onChange={(event: ChangeEvent<HTMLInputElement>) => setUsernameOrEmail(event.target.value.toLowerCase())}/>
 				<div>
 					<h3 className="text-gray-900 mb-4 pl-3">Password</h3>
 					<Input.Password

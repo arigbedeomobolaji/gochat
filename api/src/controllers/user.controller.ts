@@ -66,9 +66,10 @@ export const logoutUser = async (req: IUserRequest, res: Response, next: NextFun
 			const user = await User.findById(req.user.id);
 			if(user){
 				user.tokens = user.tokens.filter((token) => token.token !== currentToken);
-				await user.save();
-				
-				res.clearCookie("access_token").status(200).json({message: "User successfully logged out."})
+				const logoutUser = await user.save();
+				if(logoutUser) {
+					res.status(200).clearCookie("access_token").json({message: "User successfully logged out."})
+				}
 			}
 		}else {
 			throw createHttpError.Unauthorized("Please authenticate to view page");

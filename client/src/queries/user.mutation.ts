@@ -22,5 +22,10 @@ export const registerUser = (userData: UserInput) => {
 }
 
 export const loginUser = (loginData: LoginInput) => {  
-    return axios.post("/users/login", loginData);    
+    return axios.post("/users/login", loginData);
+}
+
+export const logoutUser = (path:string) => {
+    console.log(path);
+    return axios.patch(`/users${path}`)
 }

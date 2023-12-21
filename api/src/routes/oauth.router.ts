@@ -30,15 +30,6 @@ oauthRouter.get("/login/failed", (req, res) => {
     });
 });
 
-// // When logout, redirect to client
-// oauthRouter.get("/logout", (req, res, next) => {
-//     req.logout(function(err) {
-//         if(err) {return next(err)}
-//         res.redirect(CLIENT_HOME_PAGE_URL);
-//     });      
-// });
-
-
 // auth with google
 oauthRouter.get("/google", passport.authenticate('google', {scope: ['profile', 'email']}))
 

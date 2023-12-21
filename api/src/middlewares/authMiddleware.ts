@@ -17,13 +17,8 @@ export interface IUserRequest extends Request {
 const tokenSecret = process.env.TOKEN_SECRET as string;
 
 export const authenticateUser =  (passport.authenticate('google'), async (req: IUserRequest, res: Response, next: NextFunction) => {
-	try {
-		if(req.user) {
-			req.user = req.user?.user;
-			next();
-			return;
-		}
-			
+	
+	try {	
 		const token = req.cookies.access_token;
 		if (!token) {
 			return next(createHttpError.NotFound("Please authenticate."))

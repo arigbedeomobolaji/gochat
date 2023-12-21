@@ -15,7 +15,7 @@ passport.serializeUser((user, done) => {
 	done(null, user);
 });
 
-// // deserialize the cookieUserId to user in the database
+// deserialize the cookieUserId to user in the database
 passport.deserializeUser<any, any>(async (obj, done) => {
 	done(null, obj)
 	

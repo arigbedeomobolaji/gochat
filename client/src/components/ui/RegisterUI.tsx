@@ -16,6 +16,7 @@ import { useCookies } from "react-cookie";
 import { saveUser } from "@src/localStorage/userLocalStorage";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+import { errorFormat } from "@src/utils/errorFormat";
 
 type optionsDataType = {
 	label: string;
@@ -52,19 +53,19 @@ function RegisterUI({ handleIsSignUp }: RegisterUIType): React.ReactElement {
 	const [cityOptions, setCityOption] = useState([{ label: "", value: "" }]);
 	const [registerData, setRegisterData] = useState(registerDataDefault);
 	const [useEmail, setUseEmail] = useState(false);
-	const [cookies,setCookie] = useCookies(['access_token']);
+	const cookie = useCookies(['access_token']);
+	const setCookie = cookie[1]; 
 	const mutation = useMutation({
 		mutationFn: registerUser,
 		onError(error) {
-			console.log("error", error.message, error.response.data.message)
 			setTimeout(() => {
-				toast.error(error?.response?.data?.message || error.message, {
+				toast.error(errorFormat(error), {
 					position: "top-right",
 					theme: "colored",
 				})
 			}, 1)
 		},
-		onSuccess(data, variables, context) {
+		onSuccess(data) {
 			const {token, user} = data.data;
 			setCookie('access_token', token, {path: "/"});
 			saveUser(user);
