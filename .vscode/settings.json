@@ -1,11 +1,13 @@
 {
-	"cSpell.words": [
-		"Antd",
-		"authtoken",
-		"Lato",
-		"logoutall",
-		"resave",
-		"tanstack",
-		"toastify"
-	]
+  "cSpell.words": [
+    "Antd",
+    "authtoken",
+    "Chatbubbles",
+    "Lato",
+    "logoutall",
+    "resave",
+    "tanstack",
+    "toastify",
+    "Usergroup"
+  ]
 }
