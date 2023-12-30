@@ -1,7 +1,7 @@
 import { AppContext, AppContextType } from "@src/screens/Home";
 import { useContext, useState } from "react";
 import { homepageData } from "@src/utils/data";
-import NewModal from "./ui/NewModal";
+import NewChat from "./ui/NewChat";
 
 export default function SidebarHeader() {
   const [open, setOpen] = useState(false);
@@ -21,7 +21,7 @@ export default function SidebarHeader() {
                 className="text-[20px] font-extralight cursor-pointer"
                 onClick={() => label === "edit" && setOpen((prev) => !prev)}
               />
-              <NewModal open={open} setOpen={setOpen} />
+              <NewChat open={open} setOpen={setOpen} />
             </div>
           ))}
       </div>

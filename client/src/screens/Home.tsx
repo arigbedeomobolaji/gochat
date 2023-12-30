@@ -8,7 +8,14 @@ import { toast } from "react-toastify";
 import { removeUser } from "@src/localStorage/userLocalStorage";
 import MiniBar from "@src/components/ui/MiniBar";
 import Sidebar from "@src/components/ui/Sidebar";
-import { Dispatch, SetStateAction, createContext, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  createContext,
+  useEffect,
+  useState,
+} from "react";
+import { socket } from "@src/socket";
 export interface AppContextType {
   currentMenu: string;
   setCurrentMenu: Dispatch<SetStateAction<string>>;
@@ -38,7 +45,15 @@ export default function Home() {
       }, 0);
     },
   });
+
   const { loading, user } = useAuth();
+  useEffect(() => {
+    socket.connect();
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
   if (loading) {
     return <h1>Fetching User data</h1>;
   }
