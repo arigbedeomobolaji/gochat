@@ -7,12 +7,18 @@ import { SearchOutlined } from "@ant-design/icons";
 import ChatUI from "./ChatUI";
 
 export default function Sidebar() {
-  const { currentMenu } = useContext(AppContext) as AppContextType;
+  const { currentMenu, sidebarOpen } = useContext(AppContext) as AppContextType;
   const currentMenuData = homepageData.find(
     (datum) => datum.label === currentMenu
   );
   return (
-    <div className="bg-gray-800 flex-1 p-3 px-5 rounded-tl-2xl text-gray-100">
+    <div
+      className={`bg-gray-800 p-3 px-5 pt-5 ${
+        sidebarOpen
+          ? "block min-w-[250px] absolute top-0 bottom-0 left-10 md:left-14 p-10"
+          : "hidden"
+      }  xl:flex flex-col flex-1 flex-grow rounded-tl-2xl text-gray-100`}
+    >
       <SidebarHeader />
       {currentMenuData?.searchText && (
         <div className="mt-4">

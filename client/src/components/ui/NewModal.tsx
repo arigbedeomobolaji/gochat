@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Button, Modal, ConfigProvider } from "antd";
+import React from "react";
+import { Modal, ConfigProvider, Input, Avatar } from "antd";
+import { SearchOutlined, UsergroupAddOutlined } from "@ant-design/icons";
 
 const modalStyles = {
   body: {},
@@ -10,17 +11,15 @@ const modalStyles = {
   },
 };
 
-const NewModal: React.FC = () => {
-  const [open, setOpen] = useState(false);
-
+type NewModalType = {
+  open: boolean;
+  setOpen: (state: boolean) => void;
+};
+const NewModal: React.FC<NewModalType> = ({ open, setOpen }) => {
   return (
     <>
-      <Button type="primary" onClick={() => setOpen(true)}>
-        Open Modal of 1000px width
-      </Button>
       <ConfigProvider
         modal={{
-          //   classNames,
           styles: modalStyles,
         }}
       >
@@ -31,17 +30,27 @@ const NewModal: React.FC = () => {
           width={300}
           footer={null}
           closeIcon={false}
-          className="text-gray-50 absolute"
+          mask={false}
+          className="text-gray-50 absolute top-12 left-40 font-lato"
         >
           <div className="p-3 bg-gray-700 rounded-md">
             <h1 className="text-lg">New Chat</h1>
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Repellat,
-              nulla, reprehenderit aspernatur labore at molestiae numquam, nihil
-              rem a fuga maiores! Molestiae, harum? Ab cumque id culpa hic
-              consequatur, nobis facilis quam? Soluta, sint officia? Deserunt
-              neque eveniet temporibus molestias.
-            </p>
+            <div className="mt-4">
+              <Input
+                size="large"
+                placeholder="search with name"
+                prefix={<SearchOutlined />}
+                className="font-lato hover:!border-gray-300 focus:!border-gray-300 "
+              />
+            </div>
+            <div className="flex justify-start items-center gap-3 py-5">
+              <Avatar size={32} icon={<UsergroupAddOutlined />} />
+              <h3 className="font-medium">New Group</h3>
+            </div>
+            <p>Friends</p>
+            <div>
+              <code>Your friends come here</code>
+            </div>
           </div>
         </Modal>
       </ConfigProvider>

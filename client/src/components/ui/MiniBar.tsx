@@ -9,24 +9,32 @@ interface IconType {
 }
 
 export default function MiniBar() {
-  const { currentMenu, setCurrentMenu } = useContext(
+  const { currentMenu, setCurrentMenu, setSidebarOpen } = useContext(
     AppContext
   ) as AppContextType;
 
   function MyIcon({ Icon, label }: IconType) {
     const [isActive] = useState(label === currentMenu);
+    function handleIconClick() {
+      setCurrentMenu(label);
+      setSidebarOpen(true);
+    }
     return (
       <Icon
         className={`${
           isActive &&
           "border-solid border-transparent border-l-2 border-l-purple-500 bg-gray-900 text-[28px]"
         } text-[20px] px-1 pl-2 w-full rounded-5`}
-        onClick={() => setCurrentMenu(label)}
+        onClick={handleIconClick}
       />
     );
   }
   return (
-    <div className="bg-black flex flex-col justify-between items-center text-gray-200 p-2 py-3">
+    <div
+      className={`bg-black ${
+        currentMenu ? "flex flex-col" : "hidden"
+      } flex flex-col justify-between items-center text-gray-200 p-2 py-3 z-20`}
+    >
       {/* Top Icons */}
       <div className="flex flex-col items-start w-full gap-5">
         {data.topIcons.map(({ Icon, label }) => (
