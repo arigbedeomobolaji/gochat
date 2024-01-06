@@ -16,6 +16,7 @@ import {
   useState,
 } from "react";
 import { socket } from "@src/socket";
+import { io } from "socket.io-client";
 export interface AppContextType {
   currentMenu: string;
   setCurrentMenu: Dispatch<SetStateAction<string>>;
@@ -27,6 +28,7 @@ export const AppContext = createContext<AppContextType | undefined>(undefined);
 export default function Home() {
   const [currentMenu, setCurrentMenu] = useState("chat");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isActive, setIsActive] = useState(false);
 
   const navigate = useNavigate();
   const mutation = useMutation({
@@ -48,12 +50,14 @@ export default function Home() {
 
   const { loading, user } = useAuth();
   useEffect(() => {
-    socket.connect();
+    const socket = io(import.meta.env.VITE_SOCKET_API_URL, {
+      query: { username: user?.username },
+    });
 
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [user?.username]);
   if (loading) {
     return <h1>Fetching User data</h1>;
   }

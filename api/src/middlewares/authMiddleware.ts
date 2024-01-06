@@ -30,6 +30,9 @@ export const authenticateUser =
 
       if (userInDatabase) {
         req.user = userInDatabase as unknown as UserData;
+        // set isActive filed during login process
+        userInDatabase.isActive = true;
+        await userInDatabase.save();
         next();
       }
     } catch (error: any) {

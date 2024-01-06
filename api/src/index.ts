@@ -10,9 +10,25 @@ import cookieParser from "cookie-parser";
 import passport from "passport";
 import { errorHandler } from "./middlewares/errorMiddleware";
 import { createServer } from "http";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
+import { User } from "./models/user.model";
+import createHttpError from "http-errors";
+import { IUserRequest } from "./middlewares/authMiddleware";
+import { Document, ObjectId } from "mongoose";
 
 dotenv.config();
+
+// Define user interface
+interface IUser extends Document {
+  _id: ObjectId;
+  username: string;
+  // isActive: boolean;
+}
+
+// Extend the Socket interface to include the user property
+interface CustomSocket extends Socket {
+  user?: IUser;
+}
 
 const sessionSecret = process.env.SESSION_SECRET || "";
 
@@ -62,11 +78,76 @@ const io = new Server(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  console.log("a user connected");
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-  });
+// Authentication middleware
+io.use(async (socket: CustomSocket, next) => {
+  const { username } = socket.handshake.query;
+
+  if (!username) {
+    return next(
+      createHttpError.Unauthorized(
+        "Authentication error: Username not provided."
+      )
+    );
+  }
+
+  try {
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return next(
+        createHttpError.Unauthorized("Authentication error: User not found.")
+      );
+    }
+
+    // Attach the user object to the socket for later use
+    socket.user = user;
+    return next();
+  } catch (error) {
+    return next(new Error("Authentication error"));
+  }
+});
+
+// Socket.io event handling
+io.on("connection", async (socket: CustomSocket) => {
+  try {
+    console.log(`${socket?.user?.username} connected`);
+
+    // Update user's isActive status in the database
+    const activeUser = await User.findByIdAndUpdate(
+      socket?.user?._id,
+      { isActive: true },
+      { new: true }
+    );
+
+    if (activeUser) {
+      console.log(`${activeUser.username} is now active`);
+      // Emit 'userStatus' event to all connected clients
+      io.emit("userStatus", { username: activeUser?.username, isActive: true });
+    }
+
+    // Handle disconnection
+    socket.on("disconnect", async () => {
+      console.log(`${socket?.user?.username} disconnected`);
+
+      // Update user's isActive status in the database on disconnect
+      const unActiveUser = await User.findByIdAndUpdate(
+        socket?.user?._id,
+        { isActive: false },
+        { new: true }
+      );
+
+      if (unActiveUser) {
+        console.log(`${unActiveUser.username} is now inactive`);
+        // Emit 'userStatus' event to all connected clients
+        io.emit("userStatus", {
+          username: unActiveUser?.username,
+          isActive: false,
+        });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 // Error Middleware

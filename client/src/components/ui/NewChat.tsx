@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getOtherUsers } from "@src/queries/user.queries";
 import { errorFormat } from "@src/utils/errorFormat";
 import { useEffect, useMemo, useState } from "react";
+import { socket } from "@src/socket";
 
 type NewChatType = {
   open: boolean;
@@ -35,6 +36,14 @@ export default function NewChat({ open, setOpen }: NewChatType) {
   });
   const [otherUsers, setOtherUsers] = useState<Friend[]>([]);
 
+  // Listen for custom 'userStatus' event from the server
+  socket.on("userStatus", (status: { username: string; isActive: boolean }) => {
+    console.log(
+      `User ${status.username} is ${status.isActive ? "active" : "inactive"}`
+    );
+    // Update UI or take other actions based on user status
+  });
+
   const savedUsers = useMemo(() => data?.data, [data?.data]);
 
   if (isError) {
@@ -42,13 +51,10 @@ export default function NewChat({ open, setOpen }: NewChatType) {
   }
 
   useEffect(() => {
-    console.log(data?.data);
     if (data?.data) {
       setOtherUsers(data.data);
     }
   }, [data?.data]);
-
-  console.log("This component is reredn");
 
   function handleSearch(ev: React.ChangeEvent<HTMLInputElement>) {
     const filteredUser = savedUsers.filter((user: Friend) =>

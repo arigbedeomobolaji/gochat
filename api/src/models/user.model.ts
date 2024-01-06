@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import validator from "validator";
 import jwt from "jsonwebtoken";
-import beautifyUnique from 'mongoose-beautiful-unique-validation';
+import beautifyUnique from "mongoose-beautiful-unique-validation";
 import createHttpError from "http-errors";
 import { expiresIn } from "../utils";
 dotenv.config();
@@ -23,6 +23,7 @@ interface UserDocument extends Document {
   username: string;
   friends: Schema.Types.ObjectId[];
   password: string;
+  isActive: boolean;
   tokens: { token: string; _id: Schema.Types.ObjectId }[];
   generateAuthToken(): string;
 }
@@ -66,6 +67,10 @@ const userSchema = new Schema(
         type: Schema.Types.ObjectId,
       },
     ],
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
     tokens: [
       {
         token: {
@@ -115,7 +120,7 @@ userSchema.methods.generateAuthToken = async function () {
     user.tokens = user.tokens.concat({ token });
     const savedToken = await user.save();
     if (!savedToken) {
-      throw  {error: {message: "error occurred try again"}}
+      throw { error: { message: "error occurred try again" } };
     }
     return token;
   } catch (error) {
@@ -128,15 +133,21 @@ userSchema.statics.findByCredentials = async (
   userAuthInput: string,
   password: string
 ) => {
-  const criterion = userAuthInput.includes("@") ? {['email']:userAuthInput} : {['username']:userAuthInput}
+  const criterion = userAuthInput.includes("@")
+    ? { ["email"]: userAuthInput }
+    : { ["username"]: userAuthInput };
   const user = await User.findOne(criterion);
   if (!user) {
-    throw createHttpError.Unauthorized("Please Authenticate with the correct credentials");
+    throw createHttpError.Unauthorized(
+      "Please Authenticate with the correct credentials"
+    );
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    throw createHttpError.Unauthorized("Please authenticate with the correct Credentials");
+    throw createHttpError.Unauthorized(
+      "Please authenticate with the correct Credentials"
+    );
   }
   return user;
 };
