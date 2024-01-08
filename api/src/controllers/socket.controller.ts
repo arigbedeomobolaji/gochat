@@ -15,3 +15,14 @@ export const notFriends = async (user: UserData) => {
     console.log("users error", error);
   }
 };
+
+export const friends = async (user: UserData) => {
+  try {
+    const userData = await User.findById(user._id).populate("friends").exec();
+    if (userData) {
+      return userData.friends;
+    }
+  } catch (error) {
+    console.log("users error", error);
+  }
+};

@@ -1,11 +1,12 @@
 export type User = {
-    email: string;
-    _id: string;
-    username: string;
-    location: Location
-}
+  email: string;
+  _id: string;
+  username: string;
+  location: Location;
+  isActive: boolean;
+};
 
 export type Location = {
-    country: string;
-    city: string;
-}
+  country: string;
+  city: string;
+};

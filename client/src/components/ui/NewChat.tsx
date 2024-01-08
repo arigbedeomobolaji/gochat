@@ -5,58 +5,44 @@ import {
 } from "@ant-design/icons";
 import { Input, Avatar } from "antd";
 import NewModal from "./NewModal";
-import { useQuery } from "@tanstack/react-query";
-import { getOtherUsers } from "@src/queries/user.queries";
-import { errorFormat } from "@src/utils/errorFormat";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { AppContext, AppContextType } from "@src/screens/Home";
+import { User } from "@src/types";
+import ActiveIcon from "../ActiveIcon";
 
 type NewChatType = {
   open: boolean;
   setOpen: (state: boolean) => void;
 };
 
-type Friend = {
-  username: string;
-  id: string;
-  location: {
-    country: string;
-    city: string;
-  };
-};
+// type Friend = {
+//   username: string;
+//   id: string;
+//   location: {
+//     country: string;
+//     city: string;
+//   };
+// };
 
 export default function NewChat({ open, setOpen }: NewChatType) {
-  const { isPending, isError, data, error } = useQuery({
-    queryKey: ["friends"],
-    queryFn: getOtherUsers,
-    retry: 2,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
-  const [otherUsers, setOtherUsers] = useState<Friend[]>([]);
+  const { friends } = useContext(AppContext) as AppContextType;
+  const [filteredFriends, setFilteredFriends] = useState<User[]>([]);
 
-  const { potentialFriends } = useContext(AppContext) as AppContextType;
+  const savedUsers = useMemo(() => friends, [friends]);
 
-  console.log(potentialFriends, "potentialFriends");
-
-  const savedUsers = useMemo(() => data?.data, [data?.data]);
-
-  if (isError) {
-    alert(errorFormat(error));
-  }
+  console.log(filteredFriends, friends, savedUsers, "friends");
 
   useEffect(() => {
-    if (data?.data) {
-      setOtherUsers(data.data);
+    if (friends) {
+      setFilteredFriends(friends);
     }
-  }, [data?.data]);
+  }, [friends]);
 
   function handleSearch(ev: React.ChangeEvent<HTMLInputElement>) {
-    const filteredUser = savedUsers.filter((user: Friend) =>
+    const filteredUser = savedUsers.filter((user: User) =>
       user.username.includes(ev.target.value)
     );
-    setOtherUsers(filteredUser);
+    setFilteredFriends(filteredUser);
   }
 
   return (
@@ -77,26 +63,25 @@ export default function NewChat({ open, setOpen }: NewChatType) {
           <h3 className="font-medium">New Group</h3>
         </div>
         <h3 className="font-semibold">Friends</h3>
-
-        {isPending ? (
-          <code>Loading your friends</code>
-        ) : (
-          <div className="flex items-start flex-col justify-center py-3  space-y-2 capitalize">
-            {otherUsers.length ? (
-              otherUsers?.map((friend: Friend) => (
-                <div
-                  className="flex gap-3 items-center justify-start w-full hover:bg-gray-500 cursor-pointer"
-                  key={friend.username}
-                >
+        <div className="flex items-start flex-col justify-center py-3  space-y-2 capitalize">
+          {filteredFriends.length ? (
+            filteredFriends?.map((friend: User) => (
+              <div
+                className="flex gap-3 items-center justify-start w-full cursor-pointer"
+                key={friend.username}
+              >
+                <div className="relative">
                   <Avatar size={32} icon={<UserOutlined />} />
-                  <p>{friend.username}</p>
+                  <ActiveIcon isActive={friend.isActive} />
                 </div>
-              ))
-            ) : (
-              <p>No User</p>
-            )}
-          </div>
-        )}
+
+                <p>{friend.username}</p>
+              </div>
+            ))
+          ) : (
+            <p>No User</p>
+          )}
+        </div>
       </div>
     </NewModal>
   );

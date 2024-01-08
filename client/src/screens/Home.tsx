@@ -28,6 +28,8 @@ export interface AppContextType {
   setSidebarOpen: Dispatch<SetStateAction<boolean>>;
   potentialFriends: User[];
   setPotentialFriends: Dispatch<SetStateAction<User[]>>;
+  friends: User[];
+  setFriends: Dispatch<SetStateAction<User[]>>;
 }
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -35,6 +37,7 @@ export default function Home() {
   const [currentMenu, setCurrentMenu] = useState("chat");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [potentialFriends, setPotentialFriends] = useState<User[]>([]);
+  const [friends, setFriends] = useState<User[]>([]);
   const navigate = useNavigate();
 
   const mutation = useMutation({
@@ -61,11 +64,21 @@ export default function Home() {
     console.log("here");
     const socket = socketClient(user?.username, cookies?.access_token);
     if (socket) {
+      // Potntial friends
+      socket.emit("findPotentialFriends", user);
+      socket.on("foundPotentialFriends", (potentialFriends: User[]) => {
+        setPotentialFriends((prevFriends) => [
+          ...prevFriends,
+          ...potentialFriends,
+        ]);
+      });
+      // Your friends
       socket.emit("findFriends", user);
-
-      socket.on("foundFriends", (friends) => {
-        console.log("found friends", friends);
-        setPotentialFriends((prevFriends) => [...prevFriends, ...friends]);
+      socket.on("foundFriends", (yourFriends: User[]) => {
+        console.log(yourFriends, "Ypurfriends");
+        if (yourFriends.length) {
+          setFriends((prevFriends) => [...prevFriends, ...yourFriends]);
+        }
       });
     }
 
@@ -92,6 +105,8 @@ export default function Home() {
     setSidebarOpen,
     potentialFriends,
     setPotentialFriends,
+    friends,
+    setFriends,
   };
 
   return (

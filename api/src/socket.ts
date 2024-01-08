@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import { ObjectId } from "mongoose";
 import { validateUser } from "./utils/validateUser";
 import { User, UserDocument } from "./models/user.model";
-import { notFriends } from "./controllers/socket.controller";
+import { friends, notFriends } from "./controllers/socket.controller";
 dotenv.config();
 
 // Define user interface
@@ -52,10 +52,18 @@ export const configureSocketServer = (server: HttpServer) => {
       console.log(`${socket?.user?.username} connected`);
 
       // Find friends event
-      socket.on("findFriends", async (user) => {
+      socket.on("findPotentialFriends", async (user) => {
         const friends = await notFriends(user);
         if (friends) {
-          socket.emit("foundFriends", friends);
+          socket.emit("foundPotentialFriends", friends);
+        }
+      });
+
+      // your friends event
+      socket.on("findFriends", async (user) => {
+        const myFriends = await friends(user);
+        if (myFriends) {
+          socket.emit("foundFriends", myFriends);
         }
       });
 
