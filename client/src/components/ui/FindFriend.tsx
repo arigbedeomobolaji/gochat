@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { UserOutlined, UserAddOutlined } from "@ant-design/icons";
 import { AppContext, AppContextType, UserStatus } from "@src/screens/Home";
 import { Avatar } from "antd";
