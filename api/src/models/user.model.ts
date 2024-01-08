@@ -107,7 +107,7 @@ userSchema.methods.generateAuthToken = async function () {
     // Generate Auth token for user
     const token = await jwt.sign(
       {
-        id: user._id.toString(),
+        _id: user._id.toString(),
         email: user.email,
         name: user.name,
         location: user.location,

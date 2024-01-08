@@ -2,6 +2,7 @@
 import { useContext, useState } from "react";
 import { data } from "@src/utils/data";
 import { AppContext, AppContextType } from "@src/screens/Home";
+import { Button, Tooltip } from "antd";
 
 interface IconType {
   Icon: React.FC<React.SVGProps<SVGSVGElement>>;
@@ -20,13 +21,17 @@ export default function MiniBar() {
       setSidebarOpen(true);
     }
     return (
-      <Icon
-        className={`${
-          isActive &&
-          "border-solid border-transparent border-l-2 border-l-purple-500 bg-gray-900 text-[28px]"
-        } text-[20px] px-1 pl-2 w-full rounded-5`}
-        onClick={handleIconClick}
-      />
+      <>
+        <Tooltip placement="rightTop" title={label}>
+          <Icon
+            className={`${
+              isActive &&
+              "border-solid border-transparent border-l-2 border-l-purple-500 bg-gray-900 text-[28px]"
+            } text-[20px] px-1 pl-2 w-full rounded-5`}
+            onClick={handleIconClick}
+          />
+        </Tooltip>
+      </>
     );
   }
   return (

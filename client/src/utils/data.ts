@@ -8,6 +8,7 @@ import { FaEdit } from "react-icons/fa";
 import { MdFilterList } from "react-icons/md";
 import { TbPhoneCalling, TbPhonePlus } from "react-icons/tb";
 import { LuCircleDashed } from "react-icons/lu";
+import { FiUserPlus } from "react-icons/fi";
 
 export const data = {
   topIcons: [
@@ -28,6 +29,10 @@ export const data = {
     {
       Icon: TbPhoneCalling,
       label: "phone",
+    },
+    {
+      Icon: FiUserPlus,
+      label: "find friends",
     },
     {
       Icon: LuCircleDashed,
@@ -83,6 +88,17 @@ export const homepageData: HomepageData[] = [
     label: "phone",
     Icons: [{ Icon: TbPhonePlus, label: "phone" }],
     searchText: "Search or start a new call",
+  },
+  {
+    Icon: FiUserPlus,
+    label: "find friends",
+    Icons: [
+      {
+        Icon: FiUserPlus,
+        label: "Add User",
+      },
+    ],
+    searchText: "Search or add a new friend",
   },
   {
     Icon: LuCircleDashed,

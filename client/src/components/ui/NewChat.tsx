@@ -8,8 +8,8 @@ import NewModal from "./NewModal";
 import { useQuery } from "@tanstack/react-query";
 import { getOtherUsers } from "@src/queries/user.queries";
 import { errorFormat } from "@src/utils/errorFormat";
-import { useEffect, useMemo, useState } from "react";
-import { socket } from "@src/socket";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { AppContext, AppContextType } from "@src/screens/Home";
 
 type NewChatType = {
   open: boolean;
@@ -36,13 +36,9 @@ export default function NewChat({ open, setOpen }: NewChatType) {
   });
   const [otherUsers, setOtherUsers] = useState<Friend[]>([]);
 
-  // Listen for custom 'userStatus' event from the server
-  socket.on("userStatus", (status: { username: string; isActive: boolean }) => {
-    console.log(
-      `User ${status.username} is ${status.isActive ? "active" : "inactive"}`
-    );
-    // Update UI or take other actions based on user status
-  });
+  const { potentialFriends } = useContext(AppContext) as AppContextType;
+
+  console.log(potentialFriends, "potentialFriends");
 
   const savedUsers = useMemo(() => data?.data, [data?.data]);
 

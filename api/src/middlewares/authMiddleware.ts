@@ -8,7 +8,7 @@ import createHttpError from "http-errors";
 dotenv.config();
 export interface UserData extends UserInput {
   _id: string;
-  id: string;
+  friends: string[];
 }
 
 export interface IUserRequest extends Request {
@@ -26,33 +26,42 @@ export const authenticateUser =
         return next(createHttpError.NotFound("Please authenticate."));
       }
       const data = (await jwt.verify(token, tokenSecret)) as UserData;
-      const userInDatabase = await User.findById(data.id);
+      const userInDatabase = await User.findOne({
+        _id: data._id,
+        "tokens.token": token,
+      });
 
       if (userInDatabase) {
         req.user = userInDatabase as unknown as UserData;
+
+        if (userInDatabase.isActive) {
+          next();
+          return;
+        }
+
         // set isActive filed during login process
         userInDatabase.isActive = true;
         await userInDatabase.save();
         next();
       }
     } catch (error: any) {
-      if (error.name === "TokenExpiredError") {
-        const expiredToken = req.cookies.access_token;
-        const data = (await jwt.verify(expiredToken, tokenSecret, {
+      const tokenToDelete = req.cookies.access_token;
+      if (tokenToDelete) {
+        const data = (await jwt.verify(tokenToDelete, tokenSecret, {
           ignoreExpiration: true,
         })) as UserData;
-        const user = await User.findById(data.id);
+        const user = await User.findById(data._id);
         const tokenId = user?.tokens.findIndex(
-          (token) => token.token === expiredToken
+          (token) => token.token === tokenToDelete
         ) as number;
-
         if (user && tokenId > -1) {
           user.tokens.splice(tokenId, 1);
           res.clearCookie("access_token");
           await user.save();
-          throw next(createHttpError.Unauthorized("Please authenticate."));
+          next(createHttpError.Unauthorized("Please Authenticate."));
         }
+      } else {
+        next(createHttpError.Unauthorized("Please Authenticate."));
       }
-      next(createHttpError.Unauthorized("Please Authenticate."));
     }
   });

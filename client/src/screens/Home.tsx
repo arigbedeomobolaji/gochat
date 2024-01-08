@@ -15,22 +15,28 @@ import {
   useEffect,
   useState,
 } from "react";
-import { socket } from "@src/socket";
-import { io } from "socket.io-client";
+// import { socket } from "@src/socket";
+// import { Socket } from "socket.io-client";
+import { useCookies } from "react-cookie";
+import { Spin } from "antd";
+import { socketClient } from "@src/socket";
+import { User } from "@src/types";
 export interface AppContextType {
   currentMenu: string;
   setCurrentMenu: Dispatch<SetStateAction<string>>;
   sidebarOpen: boolean;
   setSidebarOpen: Dispatch<SetStateAction<boolean>>;
+  potentialFriends: User[];
+  setPotentialFriends: Dispatch<SetStateAction<User[]>>;
 }
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export default function Home() {
   const [currentMenu, setCurrentMenu] = useState("chat");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isActive, setIsActive] = useState(false);
-
+  const [potentialFriends, setPotentialFriends] = useState<User[]>([]);
   const navigate = useNavigate();
+
   const mutation = useMutation({
     mutationFn: logoutUser,
     onSuccess() {
@@ -49,29 +55,43 @@ export default function Home() {
   });
 
   const { loading, user } = useAuth();
+  const [cookies] = useCookies(["access_token"]);
+
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_SOCKET_API_URL, {
-      query: { username: user?.username },
-    });
+    console.log("here");
+    const socket = socketClient(user?.username, cookies?.access_token);
+    if (socket) {
+      socket.emit("findFriends", user);
+
+      socket.on("foundFriends", (friends) => {
+        console.log("found friends", friends);
+        setPotentialFriends((prevFriends) => [...prevFriends, ...friends]);
+      });
+    }
 
     return () => {
-      socket.disconnect();
+      if (socket) {
+        socket.disconnect();
+      }
     };
-  }, [user?.username]);
+  }, [cookies?.access_token, user, user?.username]);
+
   if (loading) {
-    return <h1>Fetching User data</h1>;
+    return <Spin spinning={true} fullscreen />;
   }
 
-  function handleLogout(path: string) {
-    console.log(path);
-    mutation.mutate(path);
-  }
+  // function handleLogout(path: string) {
+  //   console.log(path);
+  //   mutation.mutate(path);
+  // }
 
   const appContextValue: AppContextType = {
     currentMenu,
     setCurrentMenu,
     sidebarOpen,
     setSidebarOpen,
+    potentialFriends,
+    setPotentialFriends,
   };
 
   return (

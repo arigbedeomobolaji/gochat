@@ -3,17 +3,16 @@ import { useMediaQuery } from "react-responsive";
 import SidebarHeader from "../SidebarHeader";
 import { AppContext, AppContextType } from "@src/screens/Home";
 import { homepageData } from "@src/utils/data";
-import { Input } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
 import ChatUI from "./ChatUI";
+import InputSearch from "../InputSearch";
 
 export default function Sidebar() {
   const { currentMenu, sidebarOpen } = useContext(AppContext) as AppContextType;
+  console.log(currentMenu);
   const currentMenuData = homepageData.find(
     (datum) => datum.label === currentMenu
   );
   const isTabletOrMobile = useMediaQuery({ maxWidth: 1224 });
-  console.log(isTabletOrMobile);
   return (
     <div
       className={`bg-gray-800 p-3 px-5 pt-5 ${
@@ -24,17 +23,17 @@ export default function Sidebar() {
     >
       <SidebarHeader />
       {currentMenuData?.searchText && (
-        <div className="mt-4">
-          <Input
-            size="large"
-            placeholder={currentMenuData?.searchText}
-            prefix={<SearchOutlined />}
-            className="font-lato hover:!border-gray-300"
-          />
-        </div>
+        <InputSearch
+          placeholder={currentMenuData && currentMenuData.searchText}
+          prefixIcon={true}
+        />
       )}
       <div className="mt-5">
-        {currentMenu === "chat" ? <ChatUI /> : <div>Coming soon...</div>}
+        {currentMenu === "chat" || currentMenu === "find friends" ? (
+          <ChatUI />
+        ) : (
+          <div>Coming soon...</div>
+        )}
       </div>
     </div>
   );

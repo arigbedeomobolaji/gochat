@@ -17,7 +17,6 @@ export const createUser = async (
     const token = await user.generateAuthToken();
     res
       .cookie("access_token", token, {
-        httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         expires: new Date(Date.now() + expiresIn),
       })
@@ -46,7 +45,6 @@ export const loginUser = async (
     const token = await user.generateAuthToken();
     return res
       .cookie("access_token", token, {
-        httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         expires: new Date(Date.now() + expiresIn),
       })
@@ -183,7 +181,6 @@ export const otherUsers = async (
     }));
     res.status(201).json(populatedArray);
   } catch (error) {
-    console.log(error);
-    next(createHttpError.Unauthorized("Please Login to view page"));
+    next(createHttpError.Unauthorized("Please Authenticate"));
   }
 };
