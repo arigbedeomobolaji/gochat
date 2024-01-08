@@ -15,12 +15,13 @@ import {
   useEffect,
   useState,
 } from "react";
-// import { socket } from "@src/socket";
-// import { Socket } from "socket.io-client";
-import { useCookies } from "react-cookie";
 import { Spin } from "antd";
-import { socketClient } from "@src/socket";
 import { User } from "@src/types";
+import useSocket from "@src/hooks/useSocket";
+export type UserStatus = {
+  username: string;
+  isActive: boolean;
+};
 export interface AppContextType {
   currentMenu: string;
   setCurrentMenu: Dispatch<SetStateAction<string>>;
@@ -30,6 +31,8 @@ export interface AppContextType {
   setPotentialFriends: Dispatch<SetStateAction<User[]>>;
   friends: User[];
   setFriends: Dispatch<SetStateAction<User[]>>;
+  userStatus: Set<UserStatus>;
+  setUserStatus: Dispatch<SetStateAction<Set<UserStatus>>>;
 }
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -38,6 +41,7 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [potentialFriends, setPotentialFriends] = useState<User[]>([]);
   const [friends, setFriends] = useState<User[]>([]);
+  const [userStatus, setUserStatus] = useState<Set<UserStatus>>(new Set());
   const navigate = useNavigate();
 
   const mutation = useMutation({
@@ -58,13 +62,11 @@ export default function Home() {
   });
 
   const { loading, user } = useAuth();
-  const [cookies] = useCookies(["access_token"]);
+  const { socket } = useSocket();
 
   useEffect(() => {
-    console.log("here");
-    const socket = socketClient(user?.username, cookies?.access_token);
     if (socket) {
-      // Potntial friends
+      // Potential friends
       socket.emit("findPotentialFriends", user);
       socket.on("foundPotentialFriends", (potentialFriends: User[]) => {
         setPotentialFriends((prevFriends) => [
@@ -75,9 +77,23 @@ export default function Home() {
       // Your friends
       socket.emit("findFriends", user);
       socket.on("foundFriends", (yourFriends: User[]) => {
-        console.log(yourFriends, "Ypurfriends");
         if (yourFriends.length) {
           setFriends((prevFriends) => [...prevFriends, ...yourFriends]);
+        }
+      });
+
+      // Check userStatus
+      socket.on("userStatus", (data) => {
+        if (data) {
+          setUserStatus((prevStatuses) => {
+            const prevSet = new Set(prevStatuses);
+            prevSet.forEach((set) => {
+              if (set.username === data.username) {
+                prevSet.delete(set);
+              }
+            });
+            return new Set([...prevSet, data]);
+          });
         }
       });
     }
@@ -87,7 +103,7 @@ export default function Home() {
         socket.disconnect();
       }
     };
-  }, [cookies?.access_token, user, user?.username]);
+  }, [socket, user, user?.username]);
 
   if (loading) {
     return <Spin spinning={true} fullscreen />;
@@ -107,6 +123,8 @@ export default function Home() {
     setPotentialFriends,
     friends,
     setFriends,
+    userStatus,
+    setUserStatus,
   };
 
   return (

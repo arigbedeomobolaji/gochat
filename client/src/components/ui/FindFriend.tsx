@@ -1,7 +1,7 @@
 import { UserOutlined, UserAddOutlined } from "@ant-design/icons";
-import { AppContext, AppContextType } from "@src/screens/Home";
+import { AppContext, AppContextType, UserStatus } from "@src/screens/Home";
 import { Avatar } from "antd";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import ActiveIcon from "../ActiveIcon";
 
 type FriendType = {
@@ -28,7 +28,27 @@ function Friend({ imageUrl, username, isActive }: FriendType) {
 }
 
 export default function FindFriend() {
-  const { potentialFriends } = useContext(AppContext) as AppContextType;
+  const { potentialFriends, userStatus, setPotentialFriends } = useContext(
+    AppContext
+  ) as AppContextType;
+  console.log(userStatus, "userStatus");
+  console.log(potentialFriends, "poten");
+
+  useEffect(() => {
+    if (userStatus) {
+      const updatedUser = potentialFriends.map((friend) => {
+        userStatus.forEach((userStat: UserStatus) => {
+          if (userStat.username === friend.username) {
+            console.log(userStat, friend);
+            console.log(userStat.isActive, friend.isActive);
+            friend.isActive = userStat.isActive;
+          }
+        });
+        return friend;
+      });
+      setPotentialFriends(updatedUser);
+    }
+  }, [setPotentialFriends, userStatus]);
 
   return (
     <div className="flex flex-col justify-between items-start gap-3">

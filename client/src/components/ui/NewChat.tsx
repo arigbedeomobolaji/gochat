@@ -30,8 +30,6 @@ export default function NewChat({ open, setOpen }: NewChatType) {
 
   const savedUsers = useMemo(() => friends, [friends]);
 
-  console.log(filteredFriends, friends, savedUsers, "friends");
-
   useEffect(() => {
     if (friends) {
       setFilteredFriends(friends);

@@ -8,7 +8,6 @@ import InputSearch from "../InputSearch";
 
 export default function Sidebar() {
   const { currentMenu, sidebarOpen } = useContext(AppContext) as AppContextType;
-  console.log(currentMenu);
   const currentMenuData = homepageData.find(
     (datum) => datum.label === currentMenu
   );
