@@ -4,7 +4,13 @@ import dotenv from "dotenv";
 import { ObjectId } from "mongoose";
 import { validateUser } from "./utils/validateUser";
 import { User, UserDocument } from "./models/user.model";
-import { friends, notFriends } from "./controllers/socket.controller";
+import {
+  activeStatus,
+  friends,
+  notFriends,
+} from "./controllers/socket.controller";
+import { Console } from "console";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 dotenv.config();
 
 // Define user interface
@@ -35,6 +41,12 @@ export const configureSocketServer = (server: HttpServer) => {
     },
   });
 
+  // Assuming you have a mapping of userIds to sockets
+  const userSockets: Record<
+    string,
+    Socket<DefaultEventsMap, DefaultEventsMap>
+  > = {};
+
   io.use(async (socket: CustomSocket, next) => {
     const token = socket.handshake.query.token as string;
     const user = await validateUser(token);
@@ -49,42 +61,53 @@ export const configureSocketServer = (server: HttpServer) => {
   // Socket.io event handling
   io.on("connection", async (socket: CustomSocket) => {
     try {
-      console.log(`${socket?.user?.username} connected`);
+      if (socket?.user) {
+        console.log(`${socket?.user?.username} connected`);
 
-      // Find friends event
-      socket.on("findPotentialFriends", async (user) => {
-        const friends = await notFriends(user);
-        if (friends) {
-          socket.emit("foundPotentialFriends", friends);
-        }
-      });
-
-      // your friends event
-      socket.on("findFriends", async (user) => {
-        const myFriends = await friends(user);
-        if (myFriends) {
-          socket.emit("foundFriends", myFriends);
-        }
-      });
-
-      // Handle disconnection
-      socket.on("disconnect", async (reason) => {
-        console.log(`${socket?.user?.username} disconnected`);
-        console.log(reason);
-        // Update user's isActive status in the database on disconnect
-        const unActiveUser = await User.findByIdAndUpdate(
-          socket?.user?._id,
-          { isActive: false },
-          { new: true }
+        activeStatus(
+          socket.user._id.toString(),
+          "active",
+          (username, isActive) => {
+            socket.broadcast.emit("userStatus", {
+              username,
+              isActive,
+            });
+          }
         );
 
-        if (unActiveUser) {
-          console.log(`${unActiveUser.username} is now inactive`);
-          // Emit 'userStatus' event to all connected clients
-          io.emit("userStatus", {
-            username: unActiveUser?.username,
-            isActive: false,
-          });
+        // Find friends event
+        socket.on("findPotentialFriends", async (user) => {
+          const friends = await notFriends(user);
+          if (friends) {
+            socket.emit("foundPotentialFriends", friends);
+          }
+        });
+
+        // your friends event
+        socket.on("findFriends", async (user) => {
+          const myFriends = await friends(user);
+          if (myFriends) {
+            socket.emit("foundFriends", myFriends);
+          }
+        });
+      }
+      // Handle disconnection
+      socket.on("disconnect", async (reason) => {
+        if (socket.user) {
+          console.log(`${socket?.user?.username} disconnected`);
+          console.log(reason);
+
+          activeStatus(
+            socket.user._id.toString(),
+            "inactive",
+            async (username, isActive) => {
+              console.log({ username, isActive }, "inactive");
+              socket.broadcast.emit("userStatus", {
+                username,
+                isActive,
+              });
+            }
+          );
         }
       });
     } catch (error) {

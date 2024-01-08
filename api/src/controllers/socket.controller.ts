@@ -26,3 +26,21 @@ export const friends = async (user: UserData) => {
     console.log("users error", error);
   }
 };
+
+export const activeStatus = async (
+  userId: string,
+  status: string,
+  cb: (username: string, isActive: boolean) => void
+) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isActive: status === "active" ? true : false },
+      { new: true }
+    );
+
+    if (user) {
+      cb(user.username, user.isActive);
+    }
+  } catch (error) {}
+};

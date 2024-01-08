@@ -5,6 +5,7 @@ import { User, UserInput } from "../models/user.model";
 import passport from "passport";
 import "../controllers/oath.controller";
 import createHttpError from "http-errors";
+import { ObjectId } from "mongoose";
 dotenv.config();
 export interface UserData extends UserInput {
   _id: string;
